@@ -1,7 +1,11 @@
-using CinemaTicket.Infrastructure.Data;
+using CinemaTicket.Application.Interfaces;
 using CinemaTicket.Domain.Entities;
+using CinemaTicket.Infrastructure.Data;
+using CinemaTicket.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using CinemaTicket.Application.Interfaces;
+using CinemaTicket.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +24,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+builder.Services.AddScoped<IAccountService, AccountService>();
 
 // MVC
 builder.Services.AddControllersWithViews();
