@@ -1,0 +1,49 @@
+﻿@model IEnumerable<CinemaTicket.Application.DTOs.HallDto>
+@{
+    ViewData["Title"] = "Phòng chiếu";
+    var cinema = ViewBag.Cinema as CinemaTicket.Application.DTOs.CinemaDto;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Phòng chiếu</h2>
+            <p class="text-muted mb-0">🎬 @cinema?.Name — @cinema?.Address</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="CreateHall" asp-route-cinemaId="@cinema?.Id"
+               class="btn btn-success">+ Thêm phòng</a>
+            <a asp-action="Index" class="btn btn-outline-secondary">← Quay lại</a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">Chưa có phòng chiếu nào. Hãy thêm phòng chiếu mới!</div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var hall in Model)
+            {
+                <div class="col">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">🏛️ @hall.Name</h5>
+                            <p class="text-muted">Tổng ghế: <strong>@hall.TotalSeats</strong></p>
+                        </div>
+                        <div class="card-footer">
+                            <a asp-action="SeatMap" asp-route-hallId="@hall.Id"
+                               class="btn btn-primary btn-sm w-100">Xem sơ đồ ghế</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

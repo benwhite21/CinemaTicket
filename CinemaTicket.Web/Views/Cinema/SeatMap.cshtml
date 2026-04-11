@@ -1,0 +1,72 @@
+﻿@model IEnumerable<CinemaTicket.Application.DTOs.SeatDto>
+@{
+    ViewData["Title"] = "Sơ đồ ghế";
+    var hall = ViewBag.Hall as CinemaTicket.Application.DTOs.HallDto;
+    var rows = Model.GroupBy(s => s.Row).OrderBy(g => g.Key);
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Sơ đồ ghế — @hall?.Name</h2>
+            <p class="text-muted">@hall?.CinemaName · Tổng @hall?.TotalSeats ghế</p>
+        </div>
+        <a asp-action="Halls" asp-route-id="@hall?.CinemaId"
+           class="btn btn-outline-secondary">← Quay lại</a>
+    </div>
+
+    <div class="text-center mb-4">
+        <div class="bg-dark text-white py-2 px-4 rounded mb-4 d-inline-block">
+            MÀN HÌNH
+        </div>
+
+        @foreach (var row in rows)
+        {
+            <div class="d-flex justify-content-center align-items-center gap-1 mb-1">
+                <span class="fw-bold me-2" style="width:20px">@row.Key</span>
+                @foreach (var seat in row.OrderBy(s => s.Column))
+                {
+                    <div class="seat @(seat.SeatType == "VIP" ? "seat-vip" : "seat-standard")"
+                         title="@seat.SeatName — @seat.SeatType">
+                        @seat.Column
+                    </div>
+                }
+                <span class="fw-bold ms-2" style="width:20px">@row.Key</span>
+            </div>
+        }
+    </div>
+
+    <div class="d-flex justify-content-center gap-4">
+        <div class="d-flex align-items-center gap-2">
+            <div class="seat-standard" style="width:30px;height:30px"></div>
+            <span>Ghế thường</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <div class="seat-vip" style="width:30px;height:30px"></div>
+            <span>Ghế VIP</span>
+        </div>
+    </div>
+</div>
+
+<style>
+    .seat {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        font-size: 11px;
+        cursor: default;
+    }
+
+    .seat-standard {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .seat-vip {
+        background-color: #ffc107;
+        color: #000;
+    }
+</style>

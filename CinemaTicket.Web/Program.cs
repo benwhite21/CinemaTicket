@@ -27,6 +27,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 // Services
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
+builder.Services.AddScoped<ICinemaService, CinemaService>();
 
 // MVC
 builder.Services.AddControllersWithViews();
@@ -166,7 +167,73 @@ using (var scope = app.Services.CreateScope())
         context.Movies.AddRange(movies);
         await context.SaveChangesAsync();
     }
+
+    // Seed cinemas
+    if (!context.Cinemas.Any())
+    {
+        var cinemas = new List<Cinema>
+        {
+            new Cinema
+            {
+                Name = "CGV Vincom",
+                Address = "191 Bà Triệu, Hai Bà Trưng, Hà Nội",
+                Phone = "024 3974 3333",
+                City = "Hà Nội",
+                CreatedAt = DateTime.UtcNow
+            },
+            new Cinema
+            {
+                Name = "Lotte Cinema",
+                Address = "54 Liễu Giai, Ba Đình, Hà Nội",
+                Phone = "024 3333 0909",
+                City = "Hà Nội",
+                CreatedAt = DateTime.UtcNow
+            }
+        };
+        context.Cinemas.AddRange(cinemas);
+        await context.SaveChangesAsync();
+    }
+    // Seed halls và seats
+    if (!context.Halls.Any())
+    {
+        var cgv = context.Cinemas.First(c => c.Name == "CGV Vincom");
+        var lotte = context.Cinemas.First(c => c.Name == "Lotte Cinema");
+
+        var halls = new List<Hall>
+    {
+        new Hall { Name = "Phòng 1 - Standard", CinemaId = cgv.Id, TotalSeats = 80, CreatedAt = DateTime.UtcNow },
+        new Hall { Name = "Phòng 2 - IMAX", CinemaId = cgv.Id, TotalSeats = 60, CreatedAt = DateTime.UtcNow },
+        new Hall { Name = "Phòng 1 - Standard", CinemaId = lotte.Id, TotalSeats = 80, CreatedAt = DateTime.UtcNow },
+    };
+        context.Halls.AddRange(halls);
+        await context.SaveChangesAsync();
+
+        // Tạo ghế cho từng phòng
+        foreach (var hall in context.Halls.ToList())
+        {
+            int rows = 8, cols = 10;
+            var seats = new List<Seat>();
+            for (int r = 0; r < rows; r++)
+            {
+                string rowLetter = ((char)('A' + r)).ToString();
+                for (int c = 1; c <= cols; c++)
+                {
+                    seats.Add(new Seat
+                    {
+                        HallId = hall.Id,
+                        Row = rowLetter,
+                        Column = c,
+                        SeatType = r >= rows - 2 ? SeatType.VIP : SeatType.Standard,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+            }
+            context.Seats.AddRange(seats);
+        }
+        await context.SaveChangesAsync();
+    }
 }
+
 
 if (!app.Environment.IsDevelopment())
 {
