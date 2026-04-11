@@ -1,0 +1,71 @@
+﻿@model IEnumerable<CinemaTicket.Application.DTOs.ShowtimeDto>
+@{
+    ViewData["Title"] = "Chọn suất chiếu";
+    var movie = ViewBag.Movie as CinemaTicket.Domain.Entities.Movie;
+    var date = (DateTime)ViewBag.Date;
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-3">
+            @if (!string.IsNullOrEmpty(movie?.PosterUrl))
+            {
+                <img src="@movie.PosterUrl" class="img-fluid rounded shadow" />
+            }
+            else
+            {
+                <div class="bg-secondary rounded d-flex align-items-center justify-content-center" style="height:200px">
+                    <span class="text-white fs-1">🎬</span>
+                </div>
+            }
+        </div>
+        <div class="col-md-9">
+            <h2>@movie?.Title</h2>
+            <p class="text-muted">@movie?.Duration phút | @movie?.Rating</p>
+
+            <div class="d-flex gap-2 flex-wrap mb-3">
+                @for (int i = 0; i < 7; i++)
+                {
+                    var d = DateTime.Today.AddDays(i);
+                    var isActive = d.Date == date.Date;
+                    <a asp-action="ByMovie" asp-route-movieId="@movie?.Id"
+                       asp-route-date="@d.ToString("yyyy-MM-dd")"
+                       class="btn @(isActive ? "btn-primary" : "btn-outline-secondary") btn-sm">
+                        <div>@d.ToString("ddd")</div>
+                        <div>@d.ToString("dd/MM")</div>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">Không có suất chiếu nào vào ngày này.</div>
+    }
+    else
+    {
+        @foreach (var cinemaGroup in Model.GroupBy(s => s.CinemaName))
+        {
+            <div class="card mb-3 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">🎬 @cinemaGroup.Key</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var showtime in cinemaGroup.OrderBy(s => s.StartTime))
+                        {
+                            <a asp-controller="Booking" asp-action="SelectSeats"
+                               asp-route-showtimeId="@showtime.Id"
+                               class="btn btn-outline-primary">
+                                <div class="fw-bold">@showtime.StartTime.ToString("HH:mm")</div>
+                                <small>@showtime.Format</small>
+                                <div><small class="text-muted">@showtime.AvailableSeats ghế trống</small></div>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

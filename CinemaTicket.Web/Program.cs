@@ -28,6 +28,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<ICinemaService, CinemaService>();
+builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
 
 // MVC
 builder.Services.AddControllersWithViews();
@@ -229,6 +230,56 @@ using (var scope = app.Services.CreateScope())
                 }
             }
             context.Seats.AddRange(seats);
+        }
+        await context.SaveChangesAsync();
+    }
+    // Seed showtimes
+    if (!context.Showtimes.Any())
+    {
+        var movies = context.Movies.ToList();
+        var halls = context.Halls.Include(h => h.Seats).ToList();
+
+        var showtimes = new List<Showtime>();
+        var random = new Random();
+
+        foreach (var movie in movies)
+        {
+            foreach (var hall in halls.Take(2))
+            {
+                for (int day = 0; day < 3; day++)
+                {
+                    var startTime = DateTime.Today.AddDays(day).AddHours(9 + day * 3);
+                    var showtime = new Showtime
+                    {
+                        MovieId = movie.Id,
+                        HallId = hall.Id,
+                        StartTime = startTime,
+                        EndTime = startTime.AddMinutes(movie.Duration + 15),
+                        Format = ShowtimeFormat.Standard2D,
+                        BasePrice = 75000,
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    showtimes.Add(showtime);
+                }
+            }
+        }
+        context.Showtimes.AddRange(showtimes);
+        await context.SaveChangesAsync();
+
+        // Tạo ShowtimeSeats
+        foreach (var showtime in context.Showtimes.ToList())
+        {
+            var seats = context.Seats.Where(s => s.HallId == showtime.HallId).ToList();
+            var showtimeSeats = seats.Select(seat => new ShowtimeSeat
+            {
+                ShowtimeId = showtime.Id,
+                SeatId = seat.Id,
+                Status = SeatStatus.Available,
+                Price = seat.SeatType == SeatType.VIP ? 75000 * 1.5m : 75000,
+                CreatedAt = DateTime.UtcNow
+            }).ToList();
+            context.ShowtimeSeats.AddRange(showtimeSeats);
         }
         await context.SaveChangesAsync();
     }
