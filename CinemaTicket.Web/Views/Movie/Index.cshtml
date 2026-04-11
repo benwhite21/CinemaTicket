@@ -1,0 +1,97 @@
+﻿@model IEnumerable<CinemaTicket.Application.DTOs.MovieDto>
+@{
+    ViewData["Title"] = "Danh sách phim";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Danh sách phim</h2>
+        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+        {
+            <a asp-action="Create" class="btn btn-success">+ Thêm phim</a>
+        }
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <form method="get" class="row g-2 mb-4">
+        <div class="col-md-5">
+            <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Tìm tên phim..." />
+        </div>
+        <div class="col-md-3">
+            <select name="genreId" class="form-select">
+                <option value="">-- Tất cả thể loại --</option>
+                @foreach (var genre in ViewBag.Genres)
+                {
+                    <option value="@genre.Id" selected="@(ViewBag.GenreId == genre.Id)">@genre.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="status" class="form-select">
+                <option value="">-- Tất cả --</option>
+                <option value="NowShowing">Đang chiếu</option>
+                <option value="ComingSoon">Sắp chiếu</option>
+                <option value="Ended">Kết thúc</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Tìm kiếm</button>
+        </div>
+    </form>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">Không có phim nào.</div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+            @foreach (var movie in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrEmpty(movie.PosterUrl))
+                        {
+                            <img src="@movie.PosterUrl" class="card-img-top" style="height:300px;object-fit:cover" alt="@movie.Title" />
+                        }
+                        else
+                        {
+                            <div class="bg-secondary d-flex align-items-center justify-content-center" style="height:300px">
+                                <span class="text-white fs-1">🎬</span>
+                            </div>
+                        }
+                        <div class="card-body">
+                            <h6 class="card-title">@movie.Title</h6>
+                            <p class="card-text text-muted small">
+                                @movie.Duration phút |
+                                <span class="badge bg-warning text-dark">@movie.Rating</span>
+                            </p>
+                            <p class="small">@string.Join(", ", movie.Genres)</p>
+                            <span class="badge @(movie.Status == "NowShowing" ? "bg-success" : movie.Status == "ComingSoon" ? "bg-primary" : "bg-secondary")">
+                                @(movie.Status == "NowShowing" ? "Đang chiếu" : movie.Status == "ComingSoon" ? "Sắp chiếu" : "Kết thúc")
+                            </span>
+                        </div>
+                        <div class="card-footer d-flex gap-2">
+                            <a asp-action="Details" asp-route-id="@movie.Id" class="btn btn-outline-primary btn-sm flex-grow-1">Chi tiết</a>
+                            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                            {
+                                <a asp-action="Edit" asp-route-id="@movie.Id" class="btn btn-outline-warning btn-sm">Sửa</a>
+                                <form asp-action="Delete" asp-route-id="@movie.Id" method="post" onsubmit="return confirm('Xóa phim này?')">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Xóa</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

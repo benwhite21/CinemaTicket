@@ -1,11 +1,10 @@
-using CinemaTicket.Application.Interfaces;
+﻿using CinemaTicket.Application.Interfaces;
 using CinemaTicket.Domain.Entities;
+using CinemaTicket.Domain.Enums;
 using CinemaTicket.Infrastructure.Data;
 using CinemaTicket.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using CinemaTicket.Application.Interfaces;
-using CinemaTicket.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +23,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+
+// Services
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IMovieService, MovieService>();
 
 // MVC
 builder.Services.AddControllersWithViews();
@@ -63,6 +65,106 @@ using (var scope = app.Services.CreateScope())
         };
         await userManager.CreateAsync(admin, "Admin@123456");
         await userManager.AddToRoleAsync(admin, "Admin");
+    }
+
+    // Seed genres
+    if (!context.Genres.Any())
+    {
+        var genres = new List<Genre>
+        {
+            new Genre { Name = "Hành động", CreatedAt = DateTime.UtcNow },
+            new Genre { Name = "Tình cảm", CreatedAt = DateTime.UtcNow },
+            new Genre { Name = "Hoạt hình", CreatedAt = DateTime.UtcNow },
+            new Genre { Name = "Kinh dị", CreatedAt = DateTime.UtcNow },
+            new Genre { Name = "Hài", CreatedAt = DateTime.UtcNow },
+            new Genre { Name = "Phiêu lưu", CreatedAt = DateTime.UtcNow },
+            new Genre { Name = "Khoa học viễn tưởng", CreatedAt = DateTime.UtcNow },
+        };
+        context.Genres.AddRange(genres);
+        await context.SaveChangesAsync();
+    }
+
+    // Seed movies
+    if (!context.Movies.Any())
+    {
+        var actionGenre = context.Genres.First(g => g.Name == "Hành động");
+        var horrorGenre = context.Genres.First(g => g.Name == "Kinh dị");
+        var animationGenre = context.Genres.First(g => g.Name == "Hoạt hình");
+        var adventureGenre = context.Genres.First(g => g.Name == "Phiêu lưu");
+
+        var movies = new List<Movie>
+        {
+            new Movie
+            {
+                Title = "Vũ Trụ Tối Thượng",
+                OriginalTitle = "Ultimate Universe",
+                Description = "Một siêu anh hùng đối mặt với kẻ thù mạnh nhất vũ trụ.",
+                Duration = 148,
+                ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-10)),
+                Director = "Nguyễn Văn Đạo",
+                Cast = "Trần Minh, Lê Hoa, Phạm Tuấn",
+                Rating = "C13",
+                Status = MovieStatus.NowShowing,
+                CreatedAt = DateTime.UtcNow,
+                MovieGenres = new List<MovieGenre>
+                {
+                    new MovieGenre { GenreId = actionGenre.Id }
+                }
+            },
+            new Movie
+            {
+                Title = "Đại Dương Bí Ẩn",
+                OriginalTitle = "Mystery Ocean",
+                Description = "Cuộc phiêu lưu dưới đáy đại dương đầy bí ẩn.",
+                Duration = 132,
+                ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-5)),
+                Director = "Lê Thị Hương",
+                Cast = "Phạm An, Trần Bình",
+                Rating = "P",
+                Status = MovieStatus.NowShowing,
+                CreatedAt = DateTime.UtcNow,
+                MovieGenres = new List<MovieGenre>
+                {
+                    new MovieGenre { GenreId = adventureGenre.Id }
+                }
+            },
+            new Movie
+            {
+                Title = "Đêm Không Ngủ",
+                OriginalTitle = "Sleepless Night",
+                Description = "Một đêm kinh hoàng không thể thoát khỏi.",
+                Duration = 115,
+                ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-3)),
+                Director = "Hoàng Minh",
+                Cast = "Nguyễn Lan, Trần Đức",
+                Rating = "C18",
+                Status = MovieStatus.NowShowing,
+                CreatedAt = DateTime.UtcNow,
+                MovieGenres = new List<MovieGenre>
+                {
+                    new MovieGenre { GenreId = horrorGenre.Id }
+                }
+            },
+            new Movie
+            {
+                Title = "Khu Rừng Xanh",
+                OriginalTitle = "Green Forest",
+                Description = "Câu chuyện cảm động về tình bạn giữa người và động vật.",
+                Duration = 98,
+                ReleaseDate = DateOnly.FromDateTime(DateTime.Today.AddDays(7)),
+                Director = "Phạm Thu",
+                Cast = "Lê Nam, Nguyễn Hà",
+                Rating = "P",
+                Status = MovieStatus.ComingSoon,
+                CreatedAt = DateTime.UtcNow,
+                MovieGenres = new List<MovieGenre>
+                {
+                    new MovieGenre { GenreId = animationGenre.Id }
+                }
+            },
+        };
+        context.Movies.AddRange(movies);
+        await context.SaveChangesAsync();
     }
 }
 

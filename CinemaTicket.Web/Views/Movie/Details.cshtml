@@ -1,0 +1,65 @@
+﻿@model CinemaTicket.Application.DTOs.MovieDto
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            @if (!string.IsNullOrEmpty(Model.PosterUrl))
+            {
+                <img src="@Model.PosterUrl" class="img-fluid rounded shadow" alt="@Model.Title" />
+            }
+            else
+            {
+                <div class="bg-secondary d-flex align-items-center justify-content-center rounded" style="height:400px">
+                    <span class="text-white fs-1">🎬</span>
+                </div>
+            }
+        </div>
+        <div class="col-md-8">
+            <h2>@Model.Title</h2>
+            @if (!string.IsNullOrEmpty(Model.OriginalTitle))
+            {
+                <p class="text-muted">@Model.OriginalTitle</p>
+            }
+
+            <div class="d-flex gap-2 mb-3">
+                <span class="badge bg-warning text-dark">@Model.Rating</span>
+                <span class="badge @(Model.Status == "NowShowing" ? "bg-success" : "bg-primary")">
+                    @(Model.Status == "NowShowing" ? "Đang chiếu" : "Sắp chiếu")
+                </span>
+            </div>
+
+            <table class="table table-borderless">
+                <tr><td class="fw-bold" style="width:140px">Thời lượng</td><td>@Model.Duration phút</td></tr>
+                <tr><td class="fw-bold">Khởi chiếu</td><td>@Model.ReleaseDate.ToString("dd/MM/yyyy")</td></tr>
+                @if (!string.IsNullOrEmpty(Model.Director))
+                {
+                    <tr><td class="fw-bold">Đạo diễn</td><td>@Model.Director</td></tr>
+                }
+                @if (!string.IsNullOrEmpty(Model.Cast))
+                {
+                    <tr><td class="fw-bold">Diễn viên</td><td>@Model.Cast</td></tr>
+                }
+                @if (Model.Genres.Any())
+                {
+                    <tr><td class="fw-bold">Thể loại</td><td>@string.Join(", ", Model.Genres)</td></tr>
+                }
+            </table>
+
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <h5>Nội dung</h5>
+                <p>@Model.Description</p>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.TrailerUrl))
+            {
+                <a href="@Model.TrailerUrl" target="_blank" class="btn btn-danger me-2">▶ Xem Trailer</a>
+            }
+
+            <a asp-action="Index" class="btn btn-outline-secondary">← Quay lại</a>
+        </div>
+    </div>
+</div>
