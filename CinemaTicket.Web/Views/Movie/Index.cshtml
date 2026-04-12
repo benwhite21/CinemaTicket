@@ -3,12 +3,109 @@
     ViewData["Title"] = "Danh sách phim";
 }
 
+<style>
+    .movie-card {
+        background: #1a1a2e;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #2d2d44;
+        transition: transform 0.2s, border-color 0.2s;
+        height: 100%;
+    }
+
+        .movie-card:hover {
+            transform: translateY(-4px);
+            border-color: #e94560;
+        }
+
+        .movie-card .poster {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+        }
+
+            .movie-card .poster img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .movie-card .poster .no-poster {
+                width: 100%;
+                height: 100%;
+                background: #2d2d44;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 60px;
+            }
+
+            .movie-card .poster .rating-badge {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                background: #e94560;
+                color: white;
+                font-size: 11px;
+                font-weight: bold;
+                padding: 2px 8px;
+                border-radius: 4px;
+            }
+
+        .movie-card .info {
+            padding: 12px;
+        }
+
+        .movie-card .title {
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .movie-card .meta {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 6px;
+        }
+
+    .book-btn {
+        display: block;
+        background: #e94560;
+        color: white;
+        text-align: center;
+        padding: 8px;
+        border-radius: 6px;
+        font-size: 13px;
+        text-decoration: none;
+    }
+
+        .book-btn:hover {
+            background: #c73652;
+            color: white;
+        }
+
+    .filter-bar {
+        background: #1a1a2e;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border: 1px solid #2d2d44;
+    }
+
+    .status-badge {
+        font-size: 11px;
+        padding: 3px 10px;
+        border-radius: 20px;
+    }
+</style>
+
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Danh sách phim</h2>
+        <h3 style="color:white">Danh sách phim</h3>
         @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
         {
-            <a asp-action="Create" class="btn btn-success">+ Thêm phim</a>
+            <a asp-action="Create" class="btn btn-danger">+ Thêm phim</a>
         }
     </div>
 
@@ -16,36 +113,35 @@
     {
         <div class="alert alert-success">@TempData["Success"]</div>
     }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger">@TempData["Error"]</div>
-    }
 
-    <form method="get" class="row g-2 mb-4">
-        <div class="col-md-5">
-            <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Tìm tên phim..." />
-        </div>
-        <div class="col-md-3">
-            <select name="genreId" class="form-select">
-                <option value="">-- Tất cả thể loại --</option>
-                @foreach (var genre in ViewBag.Genres)
-                {
-                    <option value="@genre.Id" selected="@(ViewBag.GenreId == genre.Id)">@genre.Name</option>
-                }
-            </select>
-        </div>
-        <div class="col-md-2">
-            <select name="status" class="form-select">
-                <option value="">-- Tất cả --</option>
-                <option value="NowShowing">Đang chiếu</option>
-                <option value="ComingSoon">Sắp chiếu</option>
-                <option value="Ended">Kết thúc</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">Tìm kiếm</button>
-        </div>
-    </form>
+    <div class="filter-bar">
+        <form method="get" class="row g-2">
+            <div class="col-md-5">
+                <input type="text" name="search" value="@ViewBag.Search"
+                       class="form-control" placeholder="🔍 Tìm tên phim..." />
+            </div>
+            <div class="col-md-3">
+                <select name="genreId" class="form-select">
+                    <option value="">-- Tất cả thể loại --</option>
+                    @foreach (var genre in ViewBag.Genres)
+                    {
+                        <option value="@genre.Id" selected="@(ViewBag.GenreId?.ToString() == genre.Id.ToString())">@genre.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select">
+                    <option value="">-- Tất cả --</option>
+                    <option value="NowShowing" selected="@(ViewBag.Status == "NowShowing")">Đang chiếu</option>
+                    <option value="ComingSoon" selected="@(ViewBag.Status == "ComingSoon")">Sắp chiếu</option>
+                    <option value="Ended" selected="@(ViewBag.Status == "Ended")">Kết thúc</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-danger w-100">Tìm kiếm</button>
+            </div>
+        </form>
+    </div>
 
     @if (!Model.Any())
     {
@@ -53,40 +149,53 @@
     }
     else
     {
-        <div class="row row-cols-1 row-cols-md-4 g-4">
+        <div class="row row-cols-2 row-cols-md-4 g-3">
             @foreach (var movie in Model)
             {
                 <div class="col">
-                    <div class="card h-100 shadow-sm">
-                        @if (!string.IsNullOrEmpty(movie.PosterUrl))
-                        {
-                            <img src="@movie.PosterUrl" class="card-img-top" style="height:300px;object-fit:cover" alt="@movie.Title" />
-                        }
-                        else
-                        {
-                            <div class="bg-secondary d-flex align-items-center justify-content-center" style="height:300px">
-                                <span class="text-white fs-1">🎬</span>
-                            </div>
-                        }
-                        <div class="card-body">
-                            <h6 class="card-title">@movie.Title</h6>
-                            <p class="card-text text-muted small">
-                                @movie.Duration phút |
-                                <span class="badge bg-warning text-dark">@movie.Rating</span>
-                            </p>
-                            <p class="small">@string.Join(", ", movie.Genres)</p>
-                            <span class="badge @(movie.Status == "NowShowing" ? "bg-success" : movie.Status == "ComingSoon" ? "bg-primary" : "bg-secondary")">
-                                @(movie.Status == "NowShowing" ? "Đang chiếu" : movie.Status == "ComingSoon" ? "Sắp chiếu" : "Kết thúc")
-                            </span>
+                    <div class="movie-card">
+                        <div class="poster">
+                            @if (!string.IsNullOrEmpty(movie.PosterUrl))
+                            {
+                                <img src="@movie.PosterUrl" alt="@movie.Title" />
+                            }
+                            else
+                            {
+                                <div class="no-poster">🎬</div>
+                            }
+                            <span class="rating-badge">@movie.Rating</span>
                         </div>
-                        <div class="card-footer d-flex gap-2">
-                            <a asp-action="Details" asp-route-id="@movie.Id" class="btn btn-outline-primary btn-sm flex-grow-1">Chi tiết</a>
+                        <div class="info">
+                            <div class="title">@movie.Title</div>
+                            <div class="meta">
+                                @movie.Duration phút |
+                                <span class="status-badge @(movie.Status == "NowShowing" ? "bg-success" : movie.Status == "ComingSoon" ? "bg-primary" : "bg-secondary")">
+                                    @(movie.Status == "NowShowing" ? "Đang chiếu" : movie.Status == "ComingSoon" ? "Sắp chiếu" : "Kết thúc")
+                                </span>
+                            </div>
+                            <div class="meta">@string.Join(", ", movie.Genres)</div>
+
+                            @if (movie.Status == "NowShowing")
+                            {
+                                <a asp-controller="Showtime" asp-action="ByMovie"
+                                   asp-route-movieId="@movie.Id" class="book-btn">Đặt vé</a>
+                            }
+                            else
+                            {
+                                <a asp-action="Details" asp-route-id="@movie.Id"
+                                   class="book-btn" style="background:#2d2d44;color:#ccc">Xem chi tiết</a>
+                            }
+
                             @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
                             {
-                                <a asp-action="Edit" asp-route-id="@movie.Id" class="btn btn-outline-warning btn-sm">Sửa</a>
-                                <form asp-action="Delete" asp-route-id="@movie.Id" method="post" onsubmit="return confirm('Xóa phim này?')">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm">Xóa</button>
-                                </form>
+                                <div class="d-flex gap-1 mt-2">
+                                    <a asp-action="Edit" asp-route-id="@movie.Id"
+                                       class="btn btn-outline-warning btn-sm flex-grow-1" style="font-size:12px">Sửa</a>
+                                    <form asp-action="Delete" asp-route-id="@movie.Id" method="post"
+                                          onsubmit="return confirm('Xóa phim này?')">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" style="font-size:12px">Xóa</button>
+                                    </form>
+                                </div>
                             }
                         </div>
                     </div>
