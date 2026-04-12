@@ -1,0 +1,180 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    var revenue7Days = ViewBag.Revenue7Days as List<object>;
+    var topMovies = ViewBag.TopMovies as dynamic;
+    var recentBookings = ViewBag.RecentBookings as dynamic;
+}
+
+<div class="top-bar">
+    <h4>Dashboard</h4>
+    <span style="color:#888;font-size:14px">@DateTime.Today.ToString("dd/MM/yyyy")</span>
+</div>
+
+@* Metric Cards *@
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="metric-card">
+            <div class="label">Doanh thu hôm nay</div>
+            <div class="value">@((ViewBag.RevenueToday as decimal? ?? 0).ToString("N0"))đ</div>
+            <div class="change up">↑ Tổng vé bán: @ViewBag.TicketsSoldToday</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card">
+            <div class="label">Phim đang chiếu</div>
+            <div class="value">@ViewBag.NowShowingCount</div>
+            <div class="change up">↑ Đang hoạt động</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card">
+            <div class="label">Suất chiếu hôm nay</div>
+            <div class="value">@ViewBag.ShowtimesToday</div>
+            <div class="change" style="color:#888">→ Tổng rạp: @ViewBag.TotalCinemas</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card">
+            <div class="label">Người dùng</div>
+            <div class="value">@ViewBag.TotalUsers</div>
+            <div class="change up">↑ Đã đăng ký</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    @* Biểu đồ doanh thu *@
+    <div class="col-md-8">
+        <div class="card-dark p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span style="color:white;font-weight:bold">Doanh thu 7 ngày qua</span>
+            </div>
+            <canvas id="revenueChart" height="100"></canvas>
+        </div>
+    </div>
+
+    @* Top phim *@
+    <div class="col-md-4">
+        <div class="card-dark p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span style="color:white;font-weight:bold">Phim hot nhất</span>
+            </div>
+            @{
+                var movies = ViewBag.TopMovies as IEnumerable<dynamic>;
+                int rank = 1;
+                var colors = new[] { "#e94560", "#4caf50", "#2196f3", "#ff9800", "#9c27b0" };
+            }
+            @if (movies != null)
+            {
+                @foreach (var movie in movies)
+                {
+                    var color = colors[(rank - 1) % colors.Length];
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span style="font-size:13px;color:#ccc">@rank. @movie.Title</span>
+                            <span style="font-size:13px;color:#888">@movie.Count vé</span>
+                        </div>
+                        <div class="progress-bar-custom">
+                            <div class="progress-fill" style="width:@(rank == 1 ? 100 : (80 - rank * 10))%;background:@color"></div>
+                        </div>
+                    </div>
+                    rank++;
+                }
+            }
+            else
+            {
+                <p style="color:#666">Chưa có dữ liệu</p>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    @* Vé vừa đặt *@
+    <div class="col-12">
+        <div class="card-dark">
+            <div class="card-header d-flex justify-content-between">
+                <span>Vé vừa đặt</span>
+                <a asp-area="" asp-controller="Booking" asp-action="MyBookings"
+                   style="color:#e94560;font-size:13px;text-decoration:none">Tất cả →</a>
+            </div>
+            <div class="p-3">
+                <table class="table table-dark-custom mb-0">
+                    <thead>
+                        <tr>
+                            <th>Mã vé</th>
+                            <th>Khách hàng</th>
+                            <th>Phim</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Thời gian</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var bookings = ViewBag.RecentBookings as IEnumerable<CinemaTicket.Domain.Entities.Booking>;
+                        }
+                        @if (bookings != null)
+                        {
+                            @foreach (var booking in bookings)
+                            {
+                                <tr>
+                                    <td style="color:#e94560">@booking.BookingCode</td>
+                                    <td>@booking.User?.FullName</td>
+                                    <td>@(booking.Showtime?.Movie?.Title?.Length > 20 ? booking.Showtime.Movie.Title.Substring(0, 20) + "..." : booking.Showtime?.Movie?.Title)</td>
+                                    <td>@booking.FinalAmount.ToString("N0")đ</td>
+                                    <td>
+                                        @if (booking.Status == CinemaTicket.Domain.Enums.BookingStatus.Paid)
+                                        {
+                                            <span class="badge-paid">Thành công</span>
+                                        }
+                                        else if (booking.Status == CinemaTicket.Domain.Enums.BookingStatus.Pending)
+                                        {
+                                            <span class="badge-pending">Chờ TT</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-cancelled">Đã hủy</span>
+                                        }
+                                    </td>
+                                    <td style="color:#888">@booking.CreatedAt.ToString("HH:mm dd/MM")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const labels = [@Html.Raw(string.Join(",", (ViewBag.Revenue7Days as List<object> ?? new List<object>()).Select(x => $"'{((dynamic)x).date}'")))];
+        const data = [@Html.Raw(string.Join(",", (ViewBag.Revenue7Days as List<object> ?? new List<object>()).Select(x => ((dynamic)x).revenue)))];
+
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Doanh thu (đ)',
+                    data,
+                    borderColor: '#e94560',
+                    backgroundColor: 'rgba(233,69,96,0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#e94560'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#888' }, grid: { color: '#2d2d44' } },
+                    y: { ticks: { color: '#888' }, grid: { color: '#2d2d44' } }
+                }
+            }
+        });
+    </script>
+}
