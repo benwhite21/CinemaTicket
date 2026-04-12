@@ -1,32 +1,45 @@
-using CinemaTicket.Web.Models;
+using CinemaTicket.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
+using CinemaTicket.Domain.Enums;
 
 namespace CinemaTicket.Web.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ApplicationDbContext context)
         {
-            _logger = logger;
+            _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var nowShowing = await _context.Movies
+                .Include(m => m.MovieGenres).ThenInclude(mg => mg.Genre)
+                .Where(m => m.Status == MovieStatus.NowShowing)
+                .Take(8).ToListAsync();
+
+            var comingSoon = await _context.Movies
+                .Include(m => m.MovieGenres).ThenInclude(mg => mg.Genre)
+                .Where(m => m.Status == MovieStatus.ComingSoon)
+                .Take(4).ToListAsync();
+
+            var totalCinemas = await _context.Cinemas.CountAsync();
+            var totalMovies = await _context.Movies.CountAsync();
+            var totalBookings = await _context.Bookings
+                .Where(b => b.Status == BookingStatus.Paid).CountAsync();
+
+            ViewBag.NowShowing = nowShowing;
+            ViewBag.ComingSoon = comingSoon;
+            ViewBag.TotalCinemas = totalCinemas;
+            ViewBag.TotalMovies = totalMovies;
+            ViewBag.TotalBookings = totalBookings;
+
             return View();
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+        public IActionResult Privacy() => View();
     }
 }

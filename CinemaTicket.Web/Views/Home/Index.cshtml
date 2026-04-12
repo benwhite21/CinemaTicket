@@ -1,8 +1,317 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Trang chủ";
+    var nowShowing = ViewBag.NowShowing as List<CinemaTicket.Domain.Entities.Movie>;
+    var comingSoon = ViewBag.ComingSoon as List<CinemaTicket.Domain.Entities.Movie>;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    .hero {
+        background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+        padding: 80px 0;
+    }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+
+            .hero h1 span {
+                color: #e94560;
+            }
+
+        .hero p {
+            color: #888;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+
+    .stat-box {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid #2d2d44;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+    }
+
+        .stat-box .num {
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .stat-box .lbl {
+            font-size: 13px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+    .section-title {
+        font-size: 22px;
+        font-weight: bold;
+        color: white;
+        margin-bottom: 5px;
+    }
+
+    .genre-filter {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .genre-btn {
+        padding: 6px 16px;
+        border-radius: 20px;
+        border: 1px solid #3d3d54;
+        background: transparent;
+        color: #ccc;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .genre-btn:hover, .genre-btn.active {
+            background: #e94560;
+            border-color: #e94560;
+            color: white;
+        }
+
+    .movie-card {
+        background: #1a1a2e;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #2d2d44;
+        transition: transform 0.2s, border-color 0.2s;
+        height: 100%;
+    }
+
+        .movie-card:hover {
+            transform: translateY(-4px);
+            border-color: #e94560;
+        }
+
+        .movie-card .poster {
+            position: relative;
+            height: 280px;
+            overflow: hidden;
+        }
+
+            .movie-card .poster img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .movie-card .poster .no-poster {
+                width: 100%;
+                height: 100%;
+                background: #2d2d44;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 60px;
+            }
+
+            .movie-card .poster .rating-badge {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                background: #e94560;
+                color: white;
+                font-size: 11px;
+                font-weight: bold;
+                padding: 2px 8px;
+                border-radius: 4px;
+            }
+
+        .movie-card .info {
+            padding: 12px;
+        }
+
+        .movie-card .title {
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .movie-card .meta {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .movie-card .genre-tag {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+    .book-btn {
+        display: block;
+        background: #e94560;
+        color: white;
+        text-align: center;
+        padding: 8px;
+        border-radius: 6px;
+        font-size: 13px;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+
+        .book-btn:hover {
+            background: #c73652;
+            color: white;
+        }
+
+    .promo-bar {
+        background: #e94560;
+        color: white;
+        padding: 10px 0;
+        font-size: 13px;
+    }
+
+        .promo-bar .code {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+</style>
+
+@* Promo bar *@
+<div class="promo-bar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <span>🔥 Ưu đãi hôm nay — Giảm 30% cho suất chiếu trước 10h sáng</span>
+        <span class="code">MORNING30</span>
+    </div>
 </div>
+
+@* Hero Banner *@
+<div class="hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1>Đặt vé xem phim<br /><span>nhanh chóng & tiện lợi</span></h1>
+                <p>Hàng trăm bộ phim hot, hàng nghìn suất chiếu mỗi ngày tại các rạp chiếu trên toàn quốc</p>
+                <div class="d-flex gap-3 mt-4">
+                    <a asp-controller="Movie" asp-action="Index" asp-route-status="NowShowing"
+                       class="btn btn-danger px-4 py-2">Đặt vé ngay</a>
+                    <a asp-controller="Movie" asp-action="Index"
+                       class="btn btn-outline-secondary px-4 py-2">Xem phim</a>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="row g-3 mt-3">
+                    <div class="col-4">
+                        <div class="stat-box">
+                            <div class="num">@ViewBag.TotalCinemas+</div>
+                            <div class="lbl">Rạp chiếu</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-box">
+                            <div class="num">@ViewBag.TotalMovies+</div>
+                            <div class="lbl">Phim hot</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-box">
+                            <div class="num">@ViewBag.TotalBookings+</div>
+                            <div class="lbl">Vé đã bán</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Phim đang chiếu *@
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="section-title">Phim đang chiếu</div>
+        <a asp-controller="Movie" asp-action="Index" asp-route-status="NowShowing"
+           style="color:#e94560;font-size:13px;text-decoration:none">Xem tất cả →</a>
+    </div>
+
+    @if (nowShowing != null && nowShowing.Any())
+    {
+        <div class="row row-cols-2 row-cols-md-4 g-3">
+            @foreach (var movie in nowShowing)
+            {
+                <div class="col">
+                    <div class="movie-card">
+                        <div class="poster">
+                            @if (!string.IsNullOrEmpty(movie.PosterUrl))
+                            {
+                                <img src="@movie.PosterUrl" alt="@movie.Title" />
+                            }
+                            else
+                            {
+                                <div class="no-poster">🎬</div>
+                            }
+                            <span class="rating-badge">@movie.Rating</span>
+                        </div>
+                        <div class="info">
+                            <div class="title" title="@movie.Title">@movie.Title</div>
+                            <div class="meta">@movie.Duration phút</div>
+                            <div class="genre-tag">@string.Join(", ", movie.MovieGenres.Select(mg => mg.Genre.Name))</div>
+                            <a asp-controller="Showtime" asp-action="ByMovie"
+                               asp-route-movieId="@movie.Id" class="book-btn">Đặt vé</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p style="color:#666">Chưa có phim đang chiếu.</p>
+    }
+</div>
+
+@* Phim sắp chiếu *@
+@if (comingSoon != null && comingSoon.Any())
+{
+    <div class="container mt-5 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="section-title">Phim sắp chiếu</div>
+            <a asp-controller="Movie" asp-action="Index" asp-route-status="ComingSoon"
+               style="color:#e94560;font-size:13px;text-decoration:none">Xem tất cả →</a>
+        </div>
+        <div class="row row-cols-2 row-cols-md-4 g-3">
+            @foreach (var movie in comingSoon)
+            {
+                <div class="col">
+                    <div class="movie-card">
+                        <div class="poster">
+                            @if (!string.IsNullOrEmpty(movie.PosterUrl))
+                            {
+                                <img src="@movie.PosterUrl" alt="@movie.Title" />
+                            }
+                            else
+                            {
+                                <div class="no-poster">🎬</div>
+                            }
+                            <span class="rating-badge" style="background:#ffc107;color:#000">@movie.Rating</span>
+                        </div>
+                        <div class="info">
+                            <div class="title">@movie.Title</div>
+                            <div class="meta">@movie.ReleaseDate.ToString("dd/MM/yyyy")</div>
+                            <div class="genre-tag">@string.Join(", ", movie.MovieGenres.Select(mg => mg.Genre.Name))</div>
+                            <a asp-controller="Movie" asp-action="Details"
+                               asp-route-id="@movie.Id"
+                               class="book-btn" style="background:#2d2d44;color:#ccc">Xem chi tiết</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}

@@ -1,29 +1,246 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - CinemaTicket</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/CinemaTicket.Web.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0f0f1a;
+            color: #e0e0e0;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+
+        .navbar {
+            background: #1a1a2e !important;
+            border-bottom: 1px solid #2d2d44;
+            padding: 12px 0;
+        }
+
+        .navbar-brand {
+            color: #e94560 !important;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .nav-link {
+            color: #ccc !important;
+            font-size: 14px;
+            padding: 8px 15px !important;
+        }
+
+            .nav-link:hover {
+                color: white !important;
+            }
+
+        .btn-signup {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+            .btn-signup:hover {
+                background: #c73652;
+                color: white;
+            }
+
+        .main-content {
+            min-height: calc(100vh - 120px);
+        }
+
+        .footer {
+            background: #1a1a2e;
+            border-top: 1px solid #2d2d44;
+            padding: 20px 0;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .card {
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            color: #e0e0e0;
+        }
+
+        .card-header {
+            background: #2d2d44;
+            border-bottom: 1px solid #3d3d54;
+        }
+
+        .table {
+            color: #ccc;
+        }
+
+            .table th {
+                color: #888;
+                border-color: #2d2d44;
+            }
+
+            .table td {
+                border-color: #2d2d44;
+            }
+
+        .form-control, .form-select {
+            background: #2d2d44;
+            border: 1px solid #3d3d54;
+            color: #e0e0e0;
+        }
+
+            .form-control:focus, .form-select:focus {
+                background: #2d2d44;
+                border-color: #e94560;
+                color: white;
+                box-shadow: 0 0 0 0.2rem rgba(233,69,96,0.25);
+            }
+
+            .form-control::placeholder {
+                color: #666;
+            }
+
+        .btn-primary {
+            background: #e94560;
+            border-color: #e94560;
+        }
+
+            .btn-primary:hover {
+                background: #c73652;
+                border-color: #c73652;
+            }
+
+        .btn-danger {
+            background: #e94560;
+            border-color: #e94560;
+        }
+
+            .btn-danger:hover {
+                background: #c73652;
+                border-color: #c73652;
+            }
+
+        .btn-outline-secondary {
+            border-color: #3d3d54;
+            color: #ccc;
+        }
+
+            .btn-outline-secondary:hover {
+                background: #2d2d44;
+                color: white;
+                border-color: #3d3d54;
+            }
+
+        .btn-success {
+            background: #1a7a4a;
+            border-color: #1a7a4a;
+        }
+
+            .btn-success:hover {
+                background: #155f39;
+                border-color: #155f39;
+            }
+
+        .alert-success {
+            background: #1a3a2e;
+            border-color: #1a7a4a;
+            color: #4caf50;
+        }
+
+        .alert-danger {
+            background: #3a1a1a;
+            border-color: #e94560;
+            color: #ff6b6b;
+        }
+
+        .alert-info {
+            background: #1a2a3a;
+            border-color: #2196f3;
+            color: #64b5f6;
+        }
+
+        .alert-warning {
+            background: #3a3a1a;
+            border-color: #ffc107;
+            color: #ffd54f;
+        }
+
+        .dropdown-menu {
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+        }
+
+        .dropdown-item {
+            color: #ccc;
+        }
+
+            .dropdown-item:hover {
+                background: #2d2d44;
+                color: white;
+            }
+
+        .dropdown-divider {
+            border-color: #2d2d44;
+        }
+
+        .badge {
+            font-size: 11px;
+        }
+
+        a {
+            color: #e94560;
+        }
+
+            a:hover {
+                color: #ff6b6b;
+            }
+
+        .text-muted {
+            color: #888 !important;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a2e;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3d3d54;
+            border-radius: 3px;
+        }
+    </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
-            <div class="container-fluid">
+        <nav class="navbar navbar-expand-sm">
+            <div class="container">
                 <a class="navbar-brand" asp-controller="Home" asp-action="Index">🎬 CinemaTicket</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="navbar-collapse collapse">
+                    <ul class="navbar-nav me-auto">
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">Trang chủ</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Movie" asp-action="Index">Phim</a>
+                            <a class="nav-link" asp-controller="Movie" asp-action="Index" asp-route-status="NowShowing">Phim đang chiếu</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Movie" asp-action="Index" asp-route-status="ComingSoon">Phim sắp chiếu</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Cinema" asp-action="Index">Rạp chiếu</a>
                         </li>
                     </ul>
                     <ul class="navbar-nav">
@@ -34,17 +251,16 @@
                                     👤 @User.Identity.Name
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Tài khoản</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Booking" asp-action="MyBookings">Vé của tôi</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Booking" asp-action="MyBookings">🎟 Vé của tôi</a></li>
                                     @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
                                     {
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Quản trị</a></li>
+                                        <li><a class="dropdown-item" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">⚙️ Quản trị</a></li>
                                     }
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form asp-controller="Account" asp-action="Logout" method="post">
-                                            <button type="submit" class="dropdown-item text-danger">Đăng xuất</button>
+                                            <button type="submit" class="dropdown-item" style="color:#e94560">Đăng xuất</button>
                                         </form>
                                     </li>
                                 </ul>
@@ -55,8 +271,8 @@
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Account" asp-action="Login">Đăng nhập</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="btn btn-primary btn-sm ms-2 mt-1" asp-controller="Account" asp-action="Register">Đăng ký</a>
+                            <li class="nav-item ms-2">
+                                <a class="btn-signup" asp-controller="Account" asp-action="Register">Đăng ký</a>
                             </li>
                         }
                     </ul>
@@ -64,16 +280,17 @@
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+
+    <div class="main-content">
+        @RenderBody()
     </div>
-    <footer class="border-top footer text-muted mt-4">
-        <div class="container py-3">
-            &copy; 2026 - CinemaTicket - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+
+    <footer class="footer">
+        <div class="container text-center">
+            <p class="mb-0">© 2026 CinemaTicket — Đặt vé xem phim nhanh chóng & tiện lợi</p>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
