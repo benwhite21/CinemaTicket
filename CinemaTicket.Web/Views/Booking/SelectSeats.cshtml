@@ -1,0 +1,200 @@
+﻿@model CinemaTicket.Application.DTOs.SelectSeatsViewModel
+@{
+    ViewData["Title"] = "Chọn ghế";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h4>@Model.Showtime.MovieTitle</h4>
+            <p class="text-muted">
+                @Model.Showtime.CinemaName — @Model.Showtime.HallName |
+                @Model.Showtime.StartTime.ToString("dd/MM/yyyy HH:mm") |
+                @Model.Showtime.Format
+            </p>
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <div class="text-center mb-3">
+                <div class="bg-dark text-white py-2 px-5 rounded d-inline-block mb-4">
+                    MÀN HÌNH
+                </div>
+
+                @{
+                    var rows = Model.Seats.GroupBy(s => s.Row).OrderBy(g => g.Key);
+                }
+
+                @foreach (var row in rows)
+                {
+                    <div class="d-flex justify-content-center align-items-center gap-1 mb-1">
+                        <span class="fw-bold me-2" style="width:20px">@row.Key</span>
+                        @foreach (var seat in row.OrderBy(s => s.Column))
+                        {
+                            var isUnavailable = seat.Status == "Booked" || seat.Status == "Locked";
+                            var seatClass = isUnavailable ? "seat-booked" : seat.SeatType == "VIP" ? "seat-vip" : "seat-standard";
+                            <div class="seat @seatClass"
+                                 data-seat-id="@seat.Id"
+                                 data-seat-name="@seat.SeatName"
+                                 data-seat-type="@seat.SeatType"
+                                 data-price="@seat.Price"
+                                 data-available="@(!isUnavailable ? "true" : "false")"
+                                 onclick="toggleSeat(this)"
+                                 title="@seat.SeatName — @seat.SeatType — @seat.Price.ToString("N0")đ">
+                                @seat.Column
+                            </div>
+                        }
+                        <span class="fw-bold ms-2" style="width:20px">@row.Key</span>
+                    </div>
+                }
+            </div>
+
+            <div class="d-flex justify-content-center gap-4 mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:28px;height:28px;border-radius:4px;background:#6c757d"></div>
+                    <small>Ghế thường</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:28px;height:28px;border-radius:4px;background:#ffc107"></div>
+                    <small>Ghế VIP</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:28px;height:28px;border-radius:4px;background:#dc3545"></div>
+                    <small>Đang chọn</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:28px;height:28px;border-radius:4px;background:#dee2e6"></div>
+                    <small>Đã đặt</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm sticky-top" style="top:80px">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Thông tin đặt vé</h5>
+                </div>
+                <div class="card-body">
+                    <div id="selectedSeatsInfo">
+                        <p class="text-muted">Chưa chọn ghế nào</p>
+                    </div>
+                    <hr />
+                    <div class="d-flex justify-content-between fw-bold">
+                        <span>Tổng tiền:</span>
+                        <span id="totalPrice" class="text-danger">0 đ</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <form asp-action="CreateBooking" method="post" id="bookingForm">
+                        <input type="hidden" name="showtimeId" value="@Model.Showtime.Id" />
+                        <div id="seatInputs"></div>
+                        <button type="submit" class="btn btn-danger w-100" id="bookBtn" disabled>
+                            Đặt vé ngay
+                        </button>
+                    </form>
+                    <a asp-controller="Showtime" asp-action="ByMovie"
+                       asp-route-movieId="@Model.Showtime.MovieId"
+                       class="btn btn-outline-secondary w-100 mt-2">← Chọn suất khác</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .seat {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .seat-standard {
+        background: #6c757d;
+        color: white;
+    }
+
+    .seat-vip {
+        background: #ffc107;
+        color: #000;
+    }
+
+    .seat-selected {
+        background: #dc3545;
+        color: white;
+    }
+
+    .seat-booked {
+        background: #dee2e6;
+        color: #aaa;
+        cursor: not-allowed;
+    }
+
+    .seat:hover:not(.seat-booked) {
+        opacity: 0.8;
+        transform: scale(1.1);
+    }
+</style>
+
+<script>
+    let selectedSeats = [];
+
+    function toggleSeat(el) {
+        if (el.dataset.available === 'false') return;
+
+        const seatId = el.dataset.seatId;
+        const seatName = el.dataset.seatName;
+        const seatType = el.dataset.seatType;
+        const price = parseFloat(el.dataset.price);
+
+        const idx = selectedSeats.findIndex(s => s.id === seatId);
+        if (idx >= 0) {
+            selectedSeats.splice(idx, 1);
+            el.classList.remove('seat-selected');
+            el.classList.add(seatType === 'VIP' ? 'seat-vip' : 'seat-standard');
+        } else {
+            if (selectedSeats.length >= 8) {
+                alert('Chỉ được chọn tối đa 8 ghế!');
+                return;
+            }
+            selectedSeats.push({ id: seatId, name: seatName, type: seatType, price });
+            el.classList.remove('seat-vip', 'seat-standard');
+            el.classList.add('seat-selected');
+        }
+        updateInfo();
+    }
+
+    function updateInfo() {
+        const total = selectedSeats.reduce((s, seat) => s + seat.price, 0);
+        const info = document.getElementById('selectedSeatsInfo');
+        const inputs = document.getElementById('seatInputs');
+        const btn = document.getElementById('bookBtn');
+
+        if (selectedSeats.length === 0) {
+            info.innerHTML = '<p class="text-muted">Chưa chọn ghế nào</p>';
+            inputs.innerHTML = '';
+            btn.disabled = true;
+        } else {
+            info.innerHTML = selectedSeats.map(s =>
+                `<div class="d-flex justify-content-between">
+                    <span>${s.name} (${s.type})</span>
+                    <span>${s.price.toLocaleString('vi-VN')}đ</span>
+                </div>`
+            ).join('');
+            inputs.innerHTML = selectedSeats.map(s =>
+                `<input type="hidden" name="seatIds" value="${s.id}" />`
+            ).join('');
+            btn.disabled = false;
+        }
+
+        document.getElementById('totalPrice').textContent =
+            total.toLocaleString('vi-VN') + ' đ';
+    }
+</script>

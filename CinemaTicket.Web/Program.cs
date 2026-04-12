@@ -29,7 +29,7 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<ICinemaService, CinemaService>();
 builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
-
+builder.Services.AddScoped<IBookingService, BookingService>();
 // MVC
 builder.Services.AddControllersWithViews();
 

@@ -58,8 +58,15 @@
             {
                 <a href="@Model.TrailerUrl" target="_blank" class="btn btn-danger me-2">▶ Xem Trailer</a>
             }
-
+            @if (Model.Status == "NowShowing")
+            {
+                <a asp-controller="Showtime" asp-action="ByMovie"
+                   asp-route-movieId="@Model.Id"
+                   class="btn btn-danger me-2">🎟 Đặt vé ngay</a>
+            }
             <a asp-action="Index" class="btn btn-outline-secondary">← Quay lại</a>
+
+            
         </div>
     </div>
 </div>

@@ -1,0 +1,64 @@
+﻿@model IEnumerable<CinemaTicket.Application.DTOs.BookingDto>
+@{
+    ViewData["Title"] = "Vé của tôi";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Vé của tôi</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Bạn chưa có vé nào.
+            <a asp-controller="Movie" asp-action="Index">Đặt vé ngay!</a>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            @foreach (var booking in Model)
+            {
+                <div class="col">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header d-flex justify-content-between">
+                            <strong>@booking.BookingCode</strong>
+                            <span class="badge @(booking.Status == "Paid" ? "bg-success" :
+                                                                  booking.Status == "Pending" ? "bg-warning text-dark" :
+                                                                  booking.Status == "Cancelled" ? "bg-danger" : "bg-secondary")">
+                                @(booking.Status == "Paid" ? "Đã thanh toán" :
+                                                        booking.Status == "Pending" ? "Chờ thanh toán" :
+                                                        booking.Status == "Cancelled" ? "Đã hủy" :
+                                                        booking.Status == "Expired" ? "Hết hạn" : booking.Status)
+                    </span>
+                </div>
+                <div class="card-body">
+                    <h5>@booking.MovieTitle</h5>
+                    <p class="text-muted mb-1">🎬 @booking.CinemaName — @booking.HallName</p>
+                    <p class="text-muted mb-1">🕐 @booking.StartTime.ToString("HH:mm dd/MM/yyyy")</p>
+                    <p class="mb-1">💺 @string.Join(", ", booking.Details.Select(d => d.SeatName))</p>
+                    <p class="fw-bold text-danger">@booking.FinalAmount.ToString("N0") đ</p>
+                </div>
+                @if (booking.Status == "Pending" || booking.Status == "Paid")
+                        {
+                            <div class="card-footer">
+                                <form asp-action="Cancel" asp-route-id="@booking.Id" method="post"
+                                      onsubmit="return confirm('Hủy vé này?')">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">Hủy vé</button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

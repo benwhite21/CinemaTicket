@@ -1,0 +1,64 @@
+﻿@model CinemaTicket.Application.DTOs.BookingDto
+@{
+    ViewData["Title"] = "Xác nhận đặt vé";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0">Xác nhận đặt vé</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        Vé sẽ hết hạn lúc: <strong>@Model.ExpiredAt?.ToString("HH:mm:ss dd/MM/yyyy")</strong>
+                        — <span id="countdown" class="fw-bold text-danger"></span>
+                    </div>
+
+                    <table class="table table-borderless">
+                        <tr><td class="fw-bold" style="width:140px">Mã đặt vé</td><td><strong class="text-danger">@Model.BookingCode</strong></td></tr>
+                        <tr><td class="fw-bold">Phim</td><td>@Model.MovieTitle</td></tr>
+                        <tr><td class="fw-bold">Rạp</td><td>@Model.CinemaName</td></tr>
+                        <tr><td class="fw-bold">Phòng</td><td>@Model.HallName</td></tr>
+                        <tr><td class="fw-bold">Suất chiếu</td><td>@Model.StartTime.ToString("HH:mm dd/MM/yyyy")</td></tr>
+                        <tr>
+                            <td class="fw-bold">Ghế đã chọn</td>
+                            <td>@string.Join(", ", Model.Details.Select(d => d.SeatName))</td>
+                        </tr>
+                        <tr><td class="fw-bold">Tổng tiền</td><td class="text-danger fw-bold">@Model.FinalAmount.ToString("N0") đ</td></tr>
+                    </table>
+
+                    <form asp-action="FakePayment" method="post">
+                        <input type="hidden" name="bookingId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-success w-100 mb-2">
+                            Thanh toán ngay (@Model.FinalAmount.ToString("N0") đ)
+                        </button>
+                    </form>
+                    <a asp-action="MyBookings" class="btn btn-outline-secondary w-100">
+                        Xem lịch sử đặt vé
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const expiredAt = new Date('@Model.ExpiredAt?.ToString("o")');
+    const countdown = document.getElementById('countdown');
+
+    function updateCountdown() {
+        const now = new Date();
+        const diff = Math.floor((expiredAt - now) / 1000);
+        if (diff <= 0) {
+            countdown.textContent = 'Đã hết hạn!';
+            return;
+        }
+        const m = Math.floor(diff / 60);
+        const s = diff % 60;
+        countdown.textContent = `Còn ${m}:${s.toString().padStart(2, '0')}`;
+        setTimeout(updateCountdown, 1000);
+    }
+    updateCountdown();
+</script>
