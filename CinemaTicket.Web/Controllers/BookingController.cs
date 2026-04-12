@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using CinemaTicket.Domain.Entities;
+using QRCoder;
 
 namespace CinemaTicket.Web.Controllers
 {
@@ -17,6 +18,15 @@ namespace CinemaTicket.Web.Controllers
         {
             _bookingService = bookingService;
             _userManager = userManager;
+        }
+        // Thêm action này vào BookingController
+        public IActionResult QRCode(string code)
+        {
+            var qrGenerator = new QRCodeGenerator();
+            var qrData = qrGenerator.CreateQrCode(code, QRCodeGenerator.ECCLevel.Q);
+            var qrCode = new PngByteQRCode(qrData);
+            var qrBytes = qrCode.GetGraphic(10);
+            return File(qrBytes, "image/png");
         }
 
         // GET: /Booking/SelectSeats/5
@@ -73,8 +83,13 @@ namespace CinemaTicket.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> FakePayment(int bookingId)
         {
-            var booking = await _bookingService.GetBookingByIdAsync(bookingId);
-            if (booking == null) return NotFound();
+            var (success, message) = await _bookingService.ConfirmPaymentAsync(bookingId);
+
+            if (!success)
+            {
+                TempData["Error"] = message;
+                return RedirectToAction(nameof(Confirm), new { id = bookingId });
+            }
 
             TempData["Success"] = "Thanh toán thành công! Vé đã được xác nhận.";
             return RedirectToAction(nameof(MyBookings));

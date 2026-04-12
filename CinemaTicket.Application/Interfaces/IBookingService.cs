@@ -9,6 +9,8 @@ namespace CinemaTicket.Application.Interfaces
         Task<BookingDto?> GetBookingByIdAsync(int id);
         Task<IEnumerable<BookingDto>> GetUserBookingsAsync(string userId);
         Task<(bool Success, string Message)> CancelBookingAsync(int id, string userId);
+
+        Task<(bool Success, string Message)> ConfirmPaymentAsync(int bookingId);
         Task ExpireOldBookingsAsync();
     }
 }

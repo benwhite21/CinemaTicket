@@ -30,6 +30,7 @@ builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<ICinemaService, CinemaService>();
 builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<EmailService>();
 // MVC
 builder.Services.AddControllersWithViews();
 

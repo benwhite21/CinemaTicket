@@ -15,7 +15,37 @@ namespace CinemaTicket.Infrastructure.Services
         {
             _context = context;
         }
+        public async Task<(bool Success, string Message)> ConfirmPaymentAsync(int bookingId)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.BookingDetails)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
 
+            if (booking == null)
+                return (false, "Không tìm thấy đơn đặt vé.");
+
+            if (booking.Status != BookingStatus.Pending)
+                return (false, "Đơn này không thể xác nhận thanh toán.");
+
+            booking.Status = BookingStatus.Paid;
+            booking.UpdatedAt = DateTime.UtcNow;
+
+            // Cập nhật ghế thành Booked
+            var seatIds = booking.BookingDetails.Select(d => d.SeatId).ToList();
+            var showtimeSeats = await _context.ShowtimeSeats
+                .Where(ss => ss.ShowtimeId == booking.ShowtimeId
+                    && seatIds.Contains(ss.SeatId))
+                .ToListAsync();
+
+            foreach (var ss in showtimeSeats)
+            {
+                ss.Status = SeatStatus.Booked;
+                ss.LockedAt = null;
+            }
+
+            await _context.SaveChangesAsync();
+            return (true, "Thanh toán thành công!");
+        }
         public async Task<SelectSeatsViewModel?> GetSelectSeatsViewModelAsync(int showtimeId)
         {
             var showtime = await _context.Showtimes
